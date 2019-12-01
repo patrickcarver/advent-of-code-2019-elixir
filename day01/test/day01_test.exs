@@ -14,9 +14,9 @@ defmodule Day01Test do
   end
 
   test "recursive fuel calculation" do
-    assert Day01.recurse(12, 0) == 2
-    assert Day01.recurse(1969, 0) == 966
-    assert Day01.recurse(100756, 0) == 50346
+    assert Day01.total_fuel_required(12, 0) == 2
+    assert Day01.total_fuel_required(1969, 0) == 966
+    assert Day01.total_fuel_required(100756, 0) == 50346
   end
 
   test "Day 01 Part 2 result" do

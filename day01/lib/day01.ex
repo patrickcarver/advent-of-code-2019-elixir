@@ -7,7 +7,7 @@ defmodule Day01 do
 
   def part2 do
     module_masses()
-    |> Stream.map(&recurse/1)
+    |> Stream.map(&total_fuel_required/1)
     |> Enum.sum()
   end
 
@@ -17,11 +17,11 @@ defmodule Day01 do
     |> Enum.sum()
   end
 
-  def recurse(mass, acc \\ 0) do
+  def total_fuel_required(mass, acc \\ 0) do
     fuel = fuel_required(mass)
 
     if fuel > 0 do
-      recurse(fuel, acc + fuel)
+      total_fuel_required(fuel, acc + fuel)
     else
       acc
     end
@@ -43,6 +43,7 @@ defmodule Day01 do
     "../data/input.txt"
     |> Path.expand(__DIR__)
     |> File.stream!()
-    |> Stream.map(fn line -> line |> String.trim_trailing() |> String.to_integer() end)
+    |> Stream.map(&String.trim_trailing/1)
+    |> Stream.map(&String.to_integer/1)
   end
 end
