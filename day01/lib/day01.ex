@@ -31,7 +31,7 @@ defmodule Day01 do
     mass
     |> Stream.iterate(&fuel_required/1)
     |> Enum.take_while(& &1 > 0)
-    |> tl() # the list will have the initial mass
+    |> tl() # remove the module mass which would be the first in the list
     |> Enum.sum()
   end
 
