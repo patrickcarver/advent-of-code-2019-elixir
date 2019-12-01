@@ -1,20 +1,20 @@
 defmodule Day01 do
   def part1 do
-    module_masses()
-    |> Stream.map(&fuel_required/1)
-    |> Enum.sum
+    run(&fuel_required/1)
   end
 
   def part2 do
-    module_masses()
-    |> Stream.map(&total_fuel_required/1)
-    |> Enum.sum()
+    run(&total_fuel_required/1)
   end
 
   def part2_with_stream_iterate do
+    run(&iterate/1)
+  end
+
+  def run(function_name) do
     module_masses()
-    |> Stream.map(&iterate/1)
-    |> Enum.sum()
+    |> Stream.map(function_name)
+    |> Enum.sum
   end
 
   def total_fuel_required(mass, acc \\ 0) do
