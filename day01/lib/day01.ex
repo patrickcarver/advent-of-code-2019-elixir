@@ -36,9 +36,7 @@ defmodule Day01 do
   end
 
   def fuel_required(mass) do
-    mass
-    |> div(3)
-    |> Kernel.-(2)
+    div(mass, 3) - 2
   end
 
   def module_masses do
