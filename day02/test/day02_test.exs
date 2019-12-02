@@ -37,4 +37,12 @@ defmodule Day02Test do
     expected = "30,1,1,4,2,5,6,0,99" |> Day02.convert_to_map()
     assert actual == expected
   end
+
+  test "part1" do
+    assert Day02.part1 == 3654868
+  end
+
+  test "part2" do
+    assert Day02.part2 == 7014
+  end
 end
