@@ -3,7 +3,28 @@ defmodule Day03 do
     load()
     |> coordinates()
     |> intersections()
-    |> distance_of_closest_intersection()
+    |> distance_of_closest_intersection_to_origin()
+  end
+
+  def part2() do
+    paths = load()
+
+    # need intersections
+    intersections = paths |> coordinates() |> intersections() |> MapSet.to_list()
+
+    [first, second] = paths
+    |> Enum.map(fn path ->
+      path
+      |> create_segments()
+      |> List.flatten()
+      |> Enum.dedup()
+      |> Enum.with_index()
+      |> Enum.into(%{})
+    end)
+
+    first_distances = Enum.map(intersections, fn coord -> Map.get(first, coord) end)
+    second_distances = Enum.map(intersections, fn coord -> Map.get(second, coord) end)
+    Enum.zip(first_distances, second_distances) |> Enum.map(fn {f, s} -> f + s end) |> Enum.min
   end
 
   defp intersections([first, second]) do
@@ -55,7 +76,7 @@ defmodule Day03 do
     {segment, {start_x, len}}
   end
 
-  defp distance_of_closest_intersection(intersections) do
+  defp distance_of_closest_intersection_to_origin(intersections) do
     Enum.reduce(intersections, fn coord, acc ->
       coord
       |> distance_from_origin()
