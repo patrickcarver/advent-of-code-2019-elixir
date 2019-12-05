@@ -1,18 +1,9 @@
 defmodule Day05 do
-  @moduledoc """
-  Documentation for Day05.
-  """
+  alias Day05.Program
+  def part1 do
+  end
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Day05.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def part2 do
+    :todo
   end
 end
