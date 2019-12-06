@@ -1,51 +1,9 @@
 defmodule Day05 do
   defmodule Computer do
-    def translate_opcode(opcode) do
-      case opcode do
-         1 -> {:add, 3}
-         2 -> {:multiply, 3}
-         3 -> {:input, 1}
-         4 -> {:output, 1}
-        99 -> {:halt, 0}
-        _ -> {:error, :invalid_opcode}
-      end
-    end
+    def run(indexed_data, pointer, system_id) do
+      opcode = indexed_data |> Map.get(pointer)
 
-
-    def modes(mode_codes, total_parameters) do
-      mode_codes
-      |> Enum.join()
-      |> to_string()
-      |> String.pad_trailing(total_parameters, "0")
-      |> String.codepoints()
-      |> Enum.take(2)
-      |> Enum.map(fn
-        "0" -> :position
-        "1" -> :immediate
-      end)
-    end
-
-    def translate(value) when value > 999 do
-      [opcode, _zero | mode_codes] = value |> Integer.digits() |> Enum.reverse()
-      {operation, total_parameters} = translate_opcode(opcode)
-      modes = modes(mode_codes, total_parameters)
-      {operation, modes, total_parameters}
-    end
-
-    def translate(value) when value in [3, 4] do
-      {operation, total_parameters} = translate_opcode(value)
-      {operation, [:position], total_parameters}
-    end
-
-
-
-    def translate(value) when value == 99 do
-      {operation, total_parameters} = translate_opcode(value)
-      {operation, nil, total_parameters}
-    end
-
-    def translate(_value) do
-      {:error, :invalid_input, 0}
+      handle_opcode(opcode, indexed_data, pointer, system_id)
     end
 
     def value(:position, indexed_data, value_pointer) do
@@ -57,47 +15,79 @@ defmodule Day05 do
       Map.get(indexed_data, value_pointer)
     end
 
-    def run(indexed_data, pointer, system_id) do
-      {operation, modes, total_parameters} = indexed_data |> Map.get(pointer) |> translate()
-
-      next_pointer = pointer + total_parameters + 1
-
-      case operation do
-        :add ->
-          [noun_mode, verb_mode] = modes
-          noun = value(noun_mode, indexed_data, pointer + 1)
-          verb = value(verb_mode, indexed_data, pointer + 2)
-          result = noun + verb
-          address = Map.get(indexed_data, pointer + 3)
-          next_indexed_data = Map.put(indexed_data, address, result)
-          run(next_indexed_data, next_pointer, system_id)
-        :multiply ->
-          [noun_mode, verb_mode] = modes
-          noun = value(noun_mode, indexed_data, pointer + 1)
-          verb = value(verb_mode, indexed_data, pointer + 2)
-          result = noun * verb
-          address = Map.get(indexed_data, pointer + 3)
-          next_indexed_data = Map.put(indexed_data, address, result)
-          run(next_indexed_data, next_pointer, system_id)
-        :input ->
-          [mode] = modes
-          input = value(mode, indexed_data, pointer + 1)
-          IO.inspect input
-          next_indexed_data = Map.put(indexed_data, input, system_id)
-          run(next_indexed_data, next_pointer, system_id)
-        :output ->
-          output = value(:position, indexed_data, pointer + 1)
-          IO.puts output
-          run(indexed_data, next_pointer, system_id)
-        :halt ->
-          IO.puts "Program finished"
-        :error ->
-          IO.inspect {operation, modes, total_parameters}
+    def translate_to_mode(num) do
+      case num do
+        0 -> :position
+        1 -> :immediate
+        _ -> {:error, "not a valid mode number"}
       end
-
     end
 
+    def execute(indexed_data, pointer, operation, [noun_mode, verb_mode]) do
+      noun = value(noun_mode, indexed_data, pointer + 1)
+      verb = value(verb_mode, indexed_data, pointer + 2)
 
+      result = operation.(noun, verb)
+      result_address = Map.get(indexed_data, pointer + 3)
+      Map.put(indexed_data, result_address, result)
+    end
+
+    def operation(num) do
+      case num do
+        1 -> &Kernel.+/2
+        2 -> &Kernel.*/2
+      end
+    end
+
+    # add
+    def handle_opcode(1, indexed_data, pointer, system_id) do
+      next_indexed_data = execute(indexed_data, pointer, &Kernel.+/2, [:position, :position])
+
+      run(next_indexed_data, pointer + 3, system_id)
+    end
+
+    # multiply
+    def handle_opcode(2, indexed_data, pointer, system_id) do
+      next_indexed_data = execute(indexed_data, pointer, &Kernel.*/2, [:position, :position])
+
+      run(next_indexed_data, pointer + 3, system_id)
+    end
+
+    # input
+    def handle_opcode(3, indexed_data, pointer, system_id) do
+      value = value(:position, indexed_data, pointer + 1)
+      next_indexed_data = Map.put(indexed_data, value, system_id)
+      run(next_indexed_data, pointer + 2, system_id)
+    end
+
+    # output
+    def handle_opcode(4, indexed_data, pointer, system_id) do
+      value = value(:position, indexed_data, pointer + 1)
+      IO.puts value
+      run(indexed_data, pointer + 2, system_id)
+    end
+
+    # add or multiply with parameter modes
+    def handle_opcode(99, _indexed_data, _pointer, _system_id) do
+      IO.puts "Program ended"
+    end
+
+    def handle_opcode(opcode_and_parameter_modes, indexed_data, pointer, system_id) when opcode_and_parameter_modes > 999 do
+      [verb_mode_num, noun_mode_num | opcode_list ] = opcode_and_parameter_modes |> Integer.digits()
+      verb_mode = translate_to_mode(verb_mode_num)
+      noun_mode = translate_to_mode(noun_mode_num)
+
+      opcode = opcode_list |> to_string |> Enum.join() |> String.to_integer()
+      operation = operation(opcode)
+
+      next_indexed_data = execute(indexed_data, pointer, operation, [noun_mode, verb_mode])
+
+      run(next_indexed_data, pointer + 3, system_id)
+    end
+
+    def handle_opcode(opcode, _indexed_data, _pointer, _system_id) do
+      {:error, "#{opcode} is invalid"}
+    end
   end
 
   def indexed_data(program) do
