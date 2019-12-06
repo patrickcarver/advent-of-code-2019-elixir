@@ -2,7 +2,6 @@ defmodule Day05 do
   defmodule Computer do
     def run(indexed_data, pointer, system_id) do
       opcode = indexed_data |> Map.get(pointer)
-
       handle_opcode(opcode, indexed_data, pointer, system_id)
     end
 
@@ -36,6 +35,7 @@ defmodule Day05 do
       case num do
         1 -> &Kernel.+/2
         2 -> &Kernel.*/2
+        _ -> {:error, num}
       end
     end
 
@@ -43,46 +43,49 @@ defmodule Day05 do
     def handle_opcode(1, indexed_data, pointer, system_id) do
       next_indexed_data = execute(indexed_data, pointer, &Kernel.+/2, [:position, :position])
 
-      run(next_indexed_data, pointer + 3, system_id)
+      run(next_indexed_data, pointer + 4, system_id)
     end
 
     # multiply
     def handle_opcode(2, indexed_data, pointer, system_id) do
       next_indexed_data = execute(indexed_data, pointer, &Kernel.*/2, [:position, :position])
 
-      run(next_indexed_data, pointer + 3, system_id)
+      run(next_indexed_data, pointer + 4, system_id)
     end
 
     # input
     def handle_opcode(3, indexed_data, pointer, system_id) do
       value = value(:position, indexed_data, pointer + 1)
       next_indexed_data = Map.put(indexed_data, value, system_id)
+
       run(next_indexed_data, pointer + 2, system_id)
     end
 
     # output
     def handle_opcode(4, indexed_data, pointer, system_id) do
       value = value(:position, indexed_data, pointer + 1)
-      IO.puts value
+      IO.inspect "value is #{value}"
+
       run(indexed_data, pointer + 2, system_id)
     end
 
-    # add or multiply with parameter modes
     def handle_opcode(99, _indexed_data, _pointer, _system_id) do
       IO.puts "Program ended"
     end
 
     def handle_opcode(opcode_and_parameter_modes, indexed_data, pointer, system_id) when opcode_and_parameter_modes > 999 do
+      IO.inspect opcode_and_parameter_modes
+      IO.inspect pointer
       [verb_mode_num, noun_mode_num | opcode_list ] = opcode_and_parameter_modes |> Integer.digits()
       verb_mode = translate_to_mode(verb_mode_num)
       noun_mode = translate_to_mode(noun_mode_num)
 
-      opcode = opcode_list |> to_string |> Enum.join() |> String.to_integer()
+      opcode = opcode_list |> Enum.join() |> String.to_integer()
       operation = operation(opcode)
 
       next_indexed_data = execute(indexed_data, pointer, operation, [noun_mode, verb_mode])
 
-      run(next_indexed_data, pointer + 3, system_id)
+      run(next_indexed_data, pointer + 4, system_id)
     end
 
     def handle_opcode(opcode, _indexed_data, _pointer, _system_id) do
