@@ -110,8 +110,8 @@ defmodule Day05 do
       %{data | program: updated_program, pointer: pointer + 4}
     end
 
-    def process(99, _data) do
-      :halt
+    def process(99, data) do
+      {:halt, data}
     end
 
     def handle_instruction(value, data) do
@@ -156,8 +156,8 @@ defmodule Day05 do
       run(updated_data)
     end
 
-    def run(:halt) do
-      IO.puts "Program finished"
+    def run({:halt, data}) do
+      data
     end
   end
 
