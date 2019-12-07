@@ -2,7 +2,8 @@ defmodule Day05Test do
   use ExUnit.Case
   doctest Day05
 
-  test "greets the world" do
+  test "part1" do
     assert Day05.hello() == :world
+    # 12896948
   end
 end
