@@ -6,9 +6,10 @@ defmodule Day05 do
       system_id: 1
     ]
 
-    def new(program) do
+    def new(program, system_id) do
       %__MODULE__{
-        program: add_indexes(program)
+        program: add_indexes(program),
+        system_id: system_id
       }
     end
 
@@ -69,6 +70,46 @@ defmodule Day05 do
       %{data | pointer: pointer + 2}
     end
 
+    def process({5, noun_mode, verb_mode}, %Data{program: program, pointer: pointer} = data) do
+      noun = value(noun_mode, program, pointer + 1)
+      verb = value(verb_mode, program, pointer + 2)
+
+      result = if noun != 0, do: verb, else: pointer + 3
+
+      %{data | pointer: result}
+    end
+
+    def process({6, noun_mode, verb_mode}, %Data{program: program, pointer: pointer} = data) do
+      noun = value(noun_mode, program, pointer + 1)
+      verb = value(verb_mode, program, pointer + 2)
+
+      result = if noun == 0, do: verb, else: pointer + 3
+
+      %{data | pointer: result}
+    end
+
+    def process({7, noun_mode, verb_mode}, %Data{program: program, pointer: pointer} = data) do
+      noun = value(noun_mode, program, pointer + 1)
+      verb = value(verb_mode, program, pointer + 2)
+
+      result = if noun < verb, do: 1, else: 0
+
+      result_address = Map.get(program, pointer + 3)
+      updated_program = Map.put(program, result_address, result)
+      %{data | program: updated_program, pointer: pointer + 4}
+    end
+
+    def process({8, noun_mode, verb_mode}, %Data{program: program, pointer: pointer} = data) do
+      noun = value(noun_mode, program, pointer + 1)
+      verb = value(verb_mode, program, pointer + 2)
+
+      result = if noun == verb, do: 1, else: 0
+
+      result_address = Map.get(program, pointer + 3)
+      updated_program = Map.put(program, result_address, result)
+      %{data | program: updated_program, pointer: pointer + 4}
+    end
+
     def process(99, _data) do
       :halt
     end
@@ -79,7 +120,7 @@ defmodule Day05 do
       |> process(data)
     end
 
-    def normalize(opcode) when opcode in [1,2] do
+    def normalize(opcode) when opcode in [1,2,5,6,7,8] do
       {opcode, 0, 0}
     end
 
@@ -102,6 +143,10 @@ defmodule Day05 do
         1 -> {1, mode, 0}
         2 -> {2, mode, 0}
         4 -> {4, mode}
+        5 -> {5, mode, 0}
+        6 -> {6, mode, 0}
+        7 -> {7, mode, 0}
+        8 -> {8, mode, 0}
       end
     end
 
@@ -118,12 +163,14 @@ defmodule Day05 do
 
   def part1 do
     load()
-    |> Data.new()
+    |> Data.new(1)
     |> Computer.run()
   end
 
   def part2 do
-    :noop
+    load()
+    |> Data.new(5)
+    |> Computer.run()
   end
 
   def load() do
