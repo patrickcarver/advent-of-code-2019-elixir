@@ -41,10 +41,10 @@ defmodule Day07.Computer do
     %{data | program: updated_program, input: remaining_inputs, pointer: pointer + 2}
   end
 
-  def process({4, mode}, %Data{program: program, pointer: pointer} = data) do
+  def process({4, mode}, %Data{program: program, output: outputs, pointer: pointer} = data) do
     value = value(mode, program, pointer + 1)
-    IO.puts value
-    %{data | output: value, pointer: pointer + 2}
+
+    %{data | output: [value | outputs], pointer: pointer + 2}
   end
 
   def process({5, noun_mode, verb_mode}, %Data{program: program, pointer: pointer} = data) do
@@ -134,10 +134,10 @@ defmodule Day07.Computer do
   end
 
   def run({:halt, data}) do
-    data
+    {:halt, data}
   end
 
-  def output(%Data{output: output}) do
-    output
-  end
+  def output({:halt, %Data{output: [head | _tail]}}), do: head
+  def output({:halt, %Data{output: []}}), do: "No output"
+  def output({_, _}), do: {:error, :invalid_state}
 end

@@ -3,7 +3,7 @@ defmodule Day07.Data do
     program: [],
     pointer: 0,
     input: [],
-    output: 0
+    output: []
   ]
 
   def new(program, input) do

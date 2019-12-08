@@ -6,12 +6,21 @@ defmodule Day07 do
 
     [0,1,2,3,4]
     |> permutations()
-    |> Enum.map(fn phases -> thrust(program, phases) end)
+    |> Enum.map(fn phases -> thrust(program, phases, 0) end)
     |> Enum.max()
   end
 
-  def thrust(program, phases) do
-    Enum.reduce(phases, 0, fn phase, input ->
+  def part2 do
+    permutations = permutations([5,6,7,8,9])
+
+    #program = "../data/input.txt" |> load()
+    program = "3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10" |> String.split(",") |> Enum.map(&String.to_integer/1)
+
+  end
+
+
+  def thrust(program, phases, init_input) do
+    Enum.reduce(phases, init_input, fn phase, input ->
       program
       |> Data.new([phase, input])
       |> Computer.run()
@@ -19,14 +28,9 @@ defmodule Day07 do
     end)
   end
 
-
   def permutations([]), do: [[]]
   def permutations(list) do
     for x <- list, y <- permutations(list -- [x]), do: [x|y]
-  end
-
-  def part2 do
-    :noop
   end
 
   def load(file_name) do
