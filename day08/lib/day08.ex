@@ -38,7 +38,7 @@ defmodule Day08 do
   end
 
   def overlay_layer([], [], new_layer) do
-    new_layer |> Enum.reverse()
+    Enum.reverse(new_layer)
   end
 
   def overlay_layer([current_row | current_rest], [previous_row | previous_rest], new_layer) do
