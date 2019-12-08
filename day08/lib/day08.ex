@@ -8,6 +8,60 @@ defmodule Day08 do
     |> product_of_ones_and_twos_in_layer()
   end
 
+  def part2 do
+    dimensions = {25, 6}
+
+    load()
+    |> layers(dimensions)
+    |> overlay()
+    |> display()
+  end
+
+  def display(layer) do
+    layer
+    |> Enum.map(fn row ->
+      row
+      |> Enum.map(fn 0 -> " "; 1 -> "X" end)
+      |> Enum.join()
+      |> Kernel.<>("\n")
+    end)
+    |> Enum.join()
+    |> IO.puts()
+  end
+
+  def overlay(layers) do
+    layers
+    |> Enum.reverse()
+    |> Enum.reduce(fn current_layer, previous_layer ->
+        overlay_layer(current_layer, previous_layer, [])
+    end)
+  end
+
+  def overlay_layer([], [], new_layer) do
+    new_layer |> Enum.reverse()
+  end
+
+  def overlay_layer([current_row | current_rest], [previous_row | previous_rest], new_layer) do
+    new_row = overlay_row(current_row, previous_row)
+    new_layer = [new_row | new_layer]
+    overlay_layer(current_rest, previous_rest, new_layer)
+  end
+
+  def overlay_row(current_row, previous_row) do
+    Enum.zip(current_row, previous_row) |> Enum.map(&overlay_pixel/1)
+  end
+
+  # 0 = black
+  # 1 = white
+  # 2 = transparent
+
+  def overlay_pixel({0, 1}), do: 0
+  def overlay_pixel({1, 0}), do: 1
+  def overlay_pixel({2, x}), do: x
+  def overlay_pixel({x, 2}), do: x
+  def overlay_pixel({x, x}), do: x
+
+
   def product_of_ones_and_twos_in_layer(layer) do
     layer
     |> Enum.reduce([0, 0], fn row, [total_ones, total_twos] ->
