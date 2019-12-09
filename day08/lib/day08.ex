@@ -1,27 +1,27 @@
 defmodule Day08 do
   def part1 do
-    dimensions = {25, 6}
-
-    load()
-    |> layers(dimensions)
+    data()
+    |> layers()
     |> layer_with_fewest_zeroes()
     |> product_of_ones_and_twos_in_layer()
   end
 
   def part2 do
-    dimensions = {25, 6}
-
-    load()
-    |> layers(dimensions)
+    data()
+    |> layers()
     |> overlay()
     |> display()
+  end
+
+  def data() do
+    %{digits: load(), dimensions: {25, 6}}
   end
 
   def display(layer) do
     layer
     |> Enum.map(fn row ->
       row
-      |> Enum.map(fn 0 -> " "; 1 -> "X" end)
+      |> Enum.map(fn 0 -> " "; 1 -> "█" end)
       |> Enum.join()
       |> Kernel.<>("\n")
     end)
@@ -61,7 +61,6 @@ defmodule Day08 do
   def overlay_pixel({x, 2}), do: x
   def overlay_pixel({x, x}), do: x
 
-
   def product_of_ones_and_twos_in_layer(layer) do
     layer
     |> Enum.reduce([0, 0], fn row, [total_ones, total_twos] ->
@@ -75,20 +74,20 @@ defmodule Day08 do
   def layer_with_fewest_zeroes(layers) do
     layers
     |> Enum.map(fn layer ->
-      zeroes = zeroes(layer)
-      {layer, zeroes}
+      total_zeroes = total_zeroes(layer)
+      {layer, total_zeroes}
     end)
     |> Enum.min_by(fn {_layer, zeroes} -> zeroes end)
     |> elem(0)
   end
 
-  def layers(list, {width, height}) do
-    list
+  def layers(%{digits: digits, dimensions: {width, height}}) do
+    digits
     |> Enum.chunk_every(width)
     |> Enum.chunk_every(height)
   end
 
-  def zeroes(layer) do
+  def total_zeroes(layer) do
     layer
     |> Enum.map(fn row -> Enum.count(row, & &1 == 0)  end)
     |> Enum.sum()
