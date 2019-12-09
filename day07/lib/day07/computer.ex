@@ -35,10 +35,14 @@ defmodule Day07.Computer do
   end
 
   def process(3, %Data{program: program, pointer: pointer, input: inputs} = data) do
-    address = Map.get(program, pointer + 1)
-    [input | remaining_inputs] = inputs
-    updated_program = Map.put(program, address, input)
-    %{data | program: updated_program, input: remaining_inputs, pointer: pointer + 2}
+    if inputs == [] do
+      %{data | state: :paused}
+    else
+      address = Map.get(program, pointer + 1)
+      [input | remaining_inputs] = inputs
+      updated_program = Map.put(program, address, input)
+      %{data | program: updated_program, input: remaining_inputs, pointer: pointer + 2}
+    end
   end
 
   def process({4, mode}, %Data{program: program, output: outputs, pointer: pointer} = data) do
@@ -88,7 +92,7 @@ defmodule Day07.Computer do
   end
 
   def process(99, data) do
-    {:halt, data}
+    %{data | state: :halt}
   end
 
   def handle_instruction(value, data) do
@@ -127,17 +131,22 @@ defmodule Day07.Computer do
     end
   end
 
-  def run(%Data{program: program, pointer: pointer} = data) do
+  def run(%Data{program: program, pointer: pointer, state: :ready} = data) do
     opcode = Map.get(program, pointer)
     updated_data = handle_instruction(opcode, data)
     run(updated_data)
   end
 
-  def run({:halt, data}) do
-    {:halt, data}
+  def run(%Data{state: state} = data) when state in [:halt, :paused] do
+    data
   end
 
-  def output({:halt, %Data{output: [head | _tail]}}), do: head
-  def output({:halt, %Data{output: []}}), do: "No output"
-  def output({_, _}), do: {:error, :invalid_state}
+
+
+  def output(%Data{state: :paused, output: output}), do: Enum.reverse(output)
+  def output(%Data{state: :halt, output: [head | _tail]}) do
+    IO.puts "HALT"
+    head
+  end
+  def output(_data), do: {:error, :invalid_state}
 end
