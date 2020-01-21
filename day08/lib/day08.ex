@@ -1,18 +1,22 @@
 defmodule Day08 do
-  @moduledoc """
-  Documentation for Day08.
-  """
+  def part1() do
+    "../priv/input.txt"
+    |> load()
+    |> layers(%{width: 25, height: 6})
+  end
 
-  @doc """
-  Hello world.
+  def layers(input, %{width: width, height: height}) do
+    input
+    |> String.codepoints()
+    |> Enum.chunk_every(width)
+    |> Enum.chunk_every(height)
+  end
 
-  ## Examples
-
-      iex> Day08.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def load(file_name) do
+    file_name
+    |> Path.expand(__DIR__)
+    |> File.stream!()
+    |> Enum.map(&String.trim_trailing/1)
+    |> hd()
   end
 end
