@@ -50,13 +50,26 @@ defmodule Day08 do
   end
 
   defp format(%{layer: layer, width: width}) do
+    translate_pixel = select_translate(IO.ANSI.enabled?())
+
     layer
-    |> Enum.map(fn
-      "0" -> IO.ANSI.black() <> "█"
-      "1" -> IO.ANSI.white() <> "█"
-    end)
+    |> Enum.map(translate_pixel)
     |> Enum.chunk_every(width)
     |> Enum.join("\n")
+  end
+
+  defp select_translate(true) do
+    fn
+      "0" -> IO.ANSI.black() <> "█"
+      "1" -> IO.ANSI.white() <> "█"
+    end
+  end
+
+  defp select_translate(false) do
+    fn
+      "0" -> " "
+      "1" -> "█"
+    end
   end
 
   defp fewest_zeros(%{layers: layers}) do
