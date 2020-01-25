@@ -1,105 +1,79 @@
 defmodule Day08 do
-  def part1 do
-    data()
-    |> layers()
-    |> layer_with_fewest_zeroes()
-    |> product_of_ones_and_twos_in_layer()
+  def run(:part1) do
+    starting_data() |> part1()
   end
 
-  def part2 do
-    data()
+  def run(:part2) do
+    starting_data() |> part2() |> IO.puts()
+  end
+
+  def part1(data) do
+    data
+    |> layers()
+    |> fewest_zeros()
+    |> nonzero_product()
+  end
+
+  def part2(data) do
+    data
     |> layers()
     |> overlay()
-    |> display()
+    |> format()
   end
 
-  def data() do
-    %{digits: load(), dimensions: {25, 6}}
+  def starting_data() do
+    %{
+      pixels: pixels_from_file("priv/input.txt"),
+      width: 25,
+      height: 6
+    }
   end
 
-  def display(layer) do
+  defp layers(%{pixels: pixels, width: width, height: height}) do
+    layers = Enum.chunk_every(pixels, height * width)
+    %{layers: layers, width: width}
+  end
+
+  defp overlay(%{layers: layers, width: width}) do
+    layer =
+      Enum.reduce(layers, fn bottom, top ->
+        bottom
+        |> Enum.zip(top)
+        |> Enum.map(fn
+          {_b, "0"} -> "0"
+          {_b, "1"} -> "1"
+          {b,  "2"} -> b
+        end)
+      end)
+
+    %{layer: layer, width: width}
+  end
+
+  defp format(%{layer: layer, width: width}) do
     layer
-    |> Enum.map(fn row ->
-      row
-      |> Enum.map(fn 0 -> " "; 1 -> "█" end)
-      |> Enum.join()
-      |> Kernel.<>("\n")
+    |> Enum.map(fn
+      "0" -> IO.ANSI.black() <> "█"
+      "1" -> IO.ANSI.white() <> "█"
     end)
-    |> Enum.join()
-    |> IO.puts()
-  end
-
-  def overlay(layers) do
-    layers
-    |> Enum.reverse()
-    |> Enum.reduce(fn current_layer, previous_layer ->
-        overlay_layer(current_layer, previous_layer, [])
-    end)
-  end
-
-  def overlay_layer([], [], new_layer) do
-    Enum.reverse(new_layer)
-  end
-
-  def overlay_layer([current_row | current_rest], [previous_row | previous_rest], new_layer) do
-    new_row = overlay_row(current_row, previous_row)
-    new_layer = [new_row | new_layer]
-    overlay_layer(current_rest, previous_rest, new_layer)
-  end
-
-  def overlay_row(current_row, previous_row) do
-    Enum.zip(current_row, previous_row) |> Enum.map(&overlay_pixel/1)
-  end
-
-  # 0 = black
-  # 1 = white
-  # 2 = transparent
-
-  def overlay_pixel({0, 1}), do: 0
-  def overlay_pixel({1, 0}), do: 1
-  def overlay_pixel({2, x}), do: x
-  def overlay_pixel({x, 2}), do: x
-  def overlay_pixel({x, x}), do: x
-
-  def product_of_ones_and_twos_in_layer(layer) do
-    layer
-    |> Enum.reduce([0, 0], fn row, [total_ones, total_twos] ->
-      ones = Enum.count(row, & &1 == 1)
-      twos = Enum.count(row, & &1 == 2)
-      [total_ones + ones, total_twos + twos]
-    end)
-    |> Enum.reduce(fn x, acc -> x * acc end)
-  end
-
-  def layer_with_fewest_zeroes(layers) do
-    layers
-    |> Enum.map(fn layer ->
-      total_zeroes = total_zeroes(layer)
-      {layer, total_zeroes}
-    end)
-    |> Enum.min_by(fn {_layer, zeroes} -> zeroes end)
-    |> elem(0)
-  end
-
-  def layers(%{digits: digits, dimensions: {width, height}}) do
-    digits
     |> Enum.chunk_every(width)
-    |> Enum.chunk_every(height)
+    |> Enum.join("\n")
   end
 
-  def total_zeroes(layer) do
-    layer
-    |> Enum.map(fn row -> Enum.count(row, & &1 == 0)  end)
-    |> Enum.sum()
+  defp fewest_zeros(%{layers: layers}) do
+    Enum.min_by(layers, fn pixels -> count(pixels, "0") end)
   end
 
-  def load() do
-    "../data/input.txt"
-    |> Path.expand(__DIR__)
-    |> File.stream!()
-    |> Enum.map(&String.trim_trailing/1)
-    |> hd()
+  defp nonzero_product(pixels) do
+    count(pixels, "1") * count(pixels, "2")
+  end
+
+  defp count(pixels, value) do
+    Enum.count(pixels, &(&1 == value))
+  end
+
+  defp pixels_from_file(file_name) do
+    file_name
+    |> File.read!()
     |> String.codepoints()
-    |> Enum.map(&String.to_integer/1)
   end
 end
