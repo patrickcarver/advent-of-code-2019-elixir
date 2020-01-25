@@ -42,7 +42,7 @@ defmodule Day08 do
         |> Enum.map(fn
           {_b, "0"} -> "0"
           {_b, "1"} -> "1"
-          {b,  "2"} -> b
+          {b, _t} -> b
         end)
       end)
 
