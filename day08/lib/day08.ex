@@ -40,9 +40,8 @@ defmodule Day08 do
         bottom
         |> Enum.zip(top)
         |> Enum.map(fn
-          {_b, "0"} -> "0"
-          {_b, "1"} -> "1"
-          {b, _t} -> b
+          {bottom_layer, "2"} -> bottom_layer
+          {_bottom_layer, top_layer} -> top_layer
         end)
       end)
 
@@ -73,7 +72,7 @@ defmodule Day08 do
   end
 
   defp fewest_zeros(%{layers: layers}) do
-    Enum.min_by(layers, fn pixels -> count(pixels, "0") end)
+    Enum.min_by(layers, &(count(&1, "0")))
   end
 
   defp nonzero_product(pixels) do
