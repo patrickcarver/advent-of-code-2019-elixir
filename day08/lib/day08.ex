@@ -56,7 +56,7 @@ defmodule Day08 do
   end
 
   def overlay(%{layers: layers, width: width}) do
-    layer =
+    unformatted_image =
       Enum.reduce(layers, fn bottom, top ->
         bottom
         |> Enum.zip(top)
@@ -66,7 +66,7 @@ defmodule Day08 do
         end)
       end)
 
-    %{layer: layer, width: width}
+    %{image: unformatted_image, width: width}
   end
 
   def format(%{layer: layer, width: width}) do
