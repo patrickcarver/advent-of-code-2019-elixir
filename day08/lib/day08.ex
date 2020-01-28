@@ -44,6 +44,7 @@ defmodule Day08 do
   end
 
   def fewest_zeros(%{layers: layers}) do
+    # Enum.min_by(layers, fn layer -> count(layer, "0") end)
     Enum.min_by(layers, &(count(&1, "0")))
   end
 
